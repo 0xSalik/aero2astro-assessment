@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+
+import React, { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import {
   Table,
   TableBody,
@@ -18,28 +18,13 @@ import {
 import { LatLngExpression } from "leaflet";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-function ChangeMapView({ coords }: { coords: LatLngExpression }) {
-  const map = useMap();
-  map.setView(coords, 13);
-  return null;
-}
-
-// Fix for the default icon issue
-L.Icon.Default.imagePath = "/";
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "marker-icon-2x.png",
-  iconUrl: "marker-icon.png",
-  shadowUrl: "marker-shadow.png",
-});
-
-const greenIcon = new L.Icon({
-  iconUrl: "/marker-icon-2x-green.png",
-  iconRetinaUrl: "/marker-icon-2x-green.png",
-  shadowUrl: "/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+const MapComponent = dynamic(() => import("@/components/global/MapComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center animate-spin">
+      <LoadingSpinner />
+    </div>
+  ),
 });
 
 export default function Home() {
@@ -49,7 +34,6 @@ export default function Home() {
   const [mapCenter, setMapCenter] = useState<LatLngExpression>([
     51.5074, -0.1278,
   ]);
-
   const [range, setRange] = useState(300);
   const [searchCoords, setSearchCoords] = useState({
     lat: "51.5074",
@@ -59,7 +43,6 @@ export default function Home() {
   const [pilots, setPilots] = useState<any[]>([]);
   const [sortColumn, setSortColumn] = useState("experience");
   const [sortDirection, setSortDirection] = useState("desc");
-  const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     fetchPilots();
@@ -214,28 +197,11 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div style={{ height: "400px" }}>
-              <MapContainer
-                center={mapCenter}
-                zoom={13}
-                style={{ height: "100%", width: "100%" }}
-                ref={mapRef}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {pilots.map((pilot) => (
-                  <Marker key={pilot.id} position={[pilot.lat, pilot.lng]}>
-                    <Popup>
-                      {pilot.name} <br /> Experience: {pilot.experience} years
-                    </Popup>
-                  </Marker>
-                ))}
-                <Marker position={userLocation} icon={greenIcon}>
-                  <Popup>Your Location</Popup>
-                </Marker>
-                <ChangeMapView coords={mapCenter} />
-              </MapContainer>
+              <MapComponent
+                mapCenter={mapCenter}
+                userLocation={userLocation}
+                pilots={pilots}
+              />
             </div>
           </CardContent>
         </Card>
