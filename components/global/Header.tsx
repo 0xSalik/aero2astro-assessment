@@ -16,7 +16,7 @@ export default function Header() {
         <div className="flex items-center gap-2 ml-auto">
           <ModeToggle />
           <Button variant={"outline"} size={"icon"}>
-            <Link href="https://github.com/0xSalik/" target="_blank">
+            <Link href="https://github.com/0xSalik/aero2astro-assessment" target="_blank">
               <Code className="w-4 h-4 p-0" />
             </Link>
           </Button>
